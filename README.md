@@ -151,7 +151,7 @@ $env:MYSQL_DATABASE = "contract_review_poc"
 服务器安装 Docker 24+ 与 Compose v2 后，克隆仓库并创建生产配置：
 
 ```bash
-git clone <GitHub仓库地址>
+git clone https://github.com/524493703-hash/contract-review-agent.git
 cd contract-review-agent
 cp .env.example .env
 # 编辑 .env，至少替换 DATABASE_URL、JWT_SECRET、INITIAL_PASSWORD、
