@@ -1,0 +1,28 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    env_file:
+      - ${ENV_FILE:-deploy/backend.env}
+    environment:
+      UPLOAD_DIR: /app/data/uploads
+      EXPORT_DIR: /app/data/exports
+    ports:
+      - "${BACKEND_BIND_ADDRESS:-0.0.0.0}:${BACKEND_PORT:-8071}:8000"
+    volumes:
+      - contract_review_data:/app/data
+    restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health', timeout=5)"
+      interval: 30s
+      timeout: 8s
+      retries: 5
+      start_period: 30s
+
+volumes:
+  contract_review_data:

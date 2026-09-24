@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="契析 AI 合同审核智能体：权限矩阵、审核流程、风险评分与审批逻辑说明" />
+  <title>契析 · 合同审核流程与权限说明</title>
+  <style>
+    :root {
+      --navy: #102b50;
+      --navy-2: #173d70;
+      --blue: #2f6db3;
+      --blue-soft: #eaf2fc;
+      --ink: #1c2a3e;
+      --muted: #69778c;
+      --line: #dfe6ef;
+      --paper: #ffffff;
+      --canvas: #f3f6fa;
+      --red: #c9444c;
+      --red-soft: #fff0f1;
+      --amber: #b97818;
+      --amber-soft: #fff7e8;
+      --green: #247b5b;
+      --green-soft: #ebf8f2;
+      --shadow: 0 16px 42px rgba(26, 45, 74, .10);
+      --radius: 18px;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--canvas); color: var(--ink); font-family: Inter, "PingFang SC", "Microsoft YaHei", sans-serif; line-height: 1.65; }
+    button, input { font: inherit; }
+    a { color: inherit; }
+    .skip { position: fixed; left: 16px; top: -60px; z-index: 100; padding: 10px 14px; background: white; border-radius: 8px; }
+    .skip:focus { top: 12px; }
+    .hero { position: relative; overflow: hidden; min-height: 410px; padding: 58px max(5vw, 28px) 54px; color: white; background: linear-gradient(128deg, #0c2445 0%, #143c70 66%, #2f6db3 100%); }
+    .hero::before, .hero::after { content: ""; position: absolute; border: 1px solid rgba(255,255,255,.13); border-radius: 50%; }
+    .hero::before { width: 480px; height: 480px; right: -160px; top: -230px; }
+    .hero::after { width: 280px; height: 280px; right: 10%; bottom: -210px; }
+    .hero-inner { position: relative; z-index: 1; max-width: 1200px; margin: auto; }
+    .brand { display: flex; align-items: center; gap: 12px; font-weight: 700; letter-spacing: .08em; }
+    .brand-mark { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 11px; background: linear-gradient(145deg, #5b94dc, #2b64ad); box-shadow: inset 0 1px 0 rgba(255,255,255,.3); font-family: Georgia, serif; }
+    .eyebrow { margin: 54px 0 12px; color: #a9c7ee; font-size: 12px; font-weight: 800; letter-spacing: .18em; }
+    h1 { max-width: 870px; margin: 0; font-family: Georgia, "Songti SC", serif; font-size: clamp(38px, 5vw, 68px); line-height: 1.13; letter-spacing: -.03em; }
+    .hero-copy { max-width: 720px; margin: 20px 0 30px; color: #d6e4f6; font-size: 16px; }
+    .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+    .hero-actions a, .print-btn { padding: 11px 17px; border: 1px solid rgba(255,255,255,.26); border-radius: 10px; color: white; background: rgba(255,255,255,.08); text-decoration: none; cursor: pointer; }
+    .hero-actions a:first-child { color: var(--navy); background: white; border-color: white; font-weight: 700; }
+    .hero-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); max-width: 760px; margin-top: 42px; border-top: 1px solid rgba(255,255,255,.18); }
+    .hero-stats div { padding: 19px 22px 0 0; }
+    .hero-stats strong { display: block; font: 700 27px/1 Georgia, serif; }
+    .hero-stats span { display: block; margin-top: 7px; color: #bcd0e9; font-size: 12px; }
+    .layout { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 28px; max-width: 1240px; margin: -28px auto 70px; padding: 0 20px; position: relative; z-index: 2; }
+    .toc { align-self: start; position: sticky; top: 22px; padding: 20px; background: rgba(255,255,255,.96); border: 1px solid var(--line); border-radius: 15px; box-shadow: var(--shadow); }
+    .toc strong { display: block; margin-bottom: 11px; font-size: 13px; }
+    .toc a { display: block; padding: 7px 9px; border-radius: 7px; color: var(--muted); font-size: 13px; text-decoration: none; }
+    .toc a:hover, .toc a:focus { color: var(--blue); background: var(--blue-soft); }
+    main { min-width: 0; }
+    .section { margin-bottom: 22px; padding: 30px; background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: 0 8px 25px rgba(30, 52, 83, .06); scroll-margin-top: 22px; }
+    .section-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; margin-bottom: 22px; }
+    .section-no { color: var(--blue); font: 700 12px/1 Georgia, serif; letter-spacing: .12em; }
+    h2 { margin: 6px 0 5px; font: 700 28px/1.25 Georgia, "Songti SC", serif; }
+    h3 { margin: 0 0 9px; font-size: 16px; }
+    p { margin: 0 0 12px; }
+    .muted { color: var(--muted); }
+    .tag { display: inline-flex; align-items: center; min-height: 28px; padding: 4px 10px; border-radius: 99px; color: var(--blue); background: var(--blue-soft); font-size: 12px; font-weight: 700; white-space: nowrap; }
+    .notice { padding: 15px 17px; border-left: 4px solid var(--blue); border-radius: 8px; background: var(--blue-soft); color: #395373; }
+    .notice.warning { border-color: var(--amber); background: var(--amber-soft); color: #74511d; }
+    .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .card { padding: 18px; border: 1px solid var(--line); border-radius: 13px; background: #fbfcfe; }
+    .card b { display: block; margin-bottom: 7px; color: var(--navy); }
+    .card p { color: var(--muted); font-size: 13px; }
+    .role-toolbar { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 16px; }
+    .role-toolbar button { padding: 8px 12px; border: 1px solid var(--line); border-radius: 99px; color: var(--muted); background: white; cursor: pointer; }
+    .role-toolbar button[aria-pressed="true"] { color: white; background: var(--blue); border-color: var(--blue); }
+    .role-summary { display: grid; grid-template-columns: 42px 1fr; gap: 12px; align-items: center; margin-bottom: 16px; padding: 14px; border-radius: 11px; background: #f6f9fd; }
+    .role-avatar { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 50%; color: white; background: var(--navy-2); font-weight: 800; }
+    .role-summary strong, .role-summary span { display: block; }
+    .role-summary span { color: var(--muted); font-size: 13px; }
+    .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; }
+    table { width: 100%; border-collapse: collapse; min-width: 850px; font-size: 13px; }
+    caption { padding: 11px 14px; text-align: left; color: var(--muted); background: #f7f9fc; }
+    th, td { padding: 12px 11px; border-bottom: 1px solid var(--line); text-align: center; vertical-align: middle; }
+    th { color: #4c5b70; background: #f7f9fc; font-size: 12px; }
+    th:first-child, td:first-child { position: sticky; left: 0; z-index: 1; min-width: 190px; text-align: left; background: white; }
+    th:first-child { background: #f7f9fc; }
+    tr:last-child td { border-bottom: 0; }
+    .yes { color: var(--green); font-weight: 800; }
+    .self { color: var(--amber); font-weight: 700; }
+    .no { color: #a7b0bd; }
+    .focus-col { background: #edf5ff !important; box-shadow: inset 2px 0 #a7c7ee, inset -2px 0 #a7c7ee; }
+    .flow { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 28px 16px; counter-reset: flow; }
+    .flow-step { position: relative; min-height: 160px; padding: 18px; border: 1px solid var(--line); border-radius: 14px; background: linear-gradient(180deg, #fff, #f8fafc); counter-increment: flow; }
+    .flow-step::before { content: counter(flow, decimal-leading-zero); display: grid; place-items: center; width: 34px; height: 34px; margin-bottom: 14px; border-radius: 10px; color: white; background: var(--blue); font: 700 12px/1 Georgia, serif; }
+    .flow-step:not(:nth-child(4n))::after { content: "→"; position: absolute; right: -23px; top: 68px; color: #98a9be; font-weight: 800; }
+    .flow-step p { color: var(--muted); font-size: 13px; }
+    .decision-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+    .decision { padding: 19px; border: 1px solid var(--line); border-top: 4px solid var(--blue); border-radius: 13px; background: #fbfcfe; }
+    .decision.accept { border-top-color: var(--green); }
+    .decision.edit { border-top-color: var(--blue); }
+    .decision.reject { border-top-color: var(--amber); }
+    .decision strong { display: block; margin-bottom: 7px; color: var(--navy); }
+    .decision p, .decision li { color: var(--muted); font-size: 13px; }
+    .decision ul { margin: 9px 0 0; padding-left: 19px; }
+    .round-chain { display: flex; align-items: stretch; gap: 8px; margin: 18px 0; overflow-x: auto; }
+    .round-node { flex: 1 0 145px; padding: 14px; border: 1px solid var(--line); border-radius: 11px; background: white; text-align: center; }
+    .round-node strong, .round-node small { display: block; }
+    .round-node strong { color: var(--navy); }
+    .round-node small { margin-top: 4px; color: var(--muted); }
+    .round-arrow { align-self: center; flex: 0 0 auto; color: #91a2b7; font-weight: 800; }
+    .risk-high, .risk-medium, .risk-low { display: inline-block; min-width: 34px; padding: 3px 8px; border-radius: 99px; text-align: center; font-size: 12px; font-weight: 800; }
+    .risk-high { color: var(--red); background: var(--red-soft); }
+    .risk-medium { color: var(--amber); background: var(--amber-soft); }
+    .risk-low { color: var(--green); background: var(--green-soft); }
+    .formula { margin: 20px 0; padding: 21px; border-radius: 13px; color: white; background: var(--navy); text-align: center; font: 700 clamp(17px, 2.5vw, 25px)/1.5 Georgia, "Songti SC", serif; }
+    .matrix { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .matrix article { padding: 17px; border-radius: 12px; background: #f7f9fc; }
+    .matrix strong { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .matrix em { color: var(--blue); font: 700 24px/1 Georgia, serif; font-style: normal; }
+    .matrix ul, .plain-list { margin: 10px 0 0; padding-left: 20px; color: var(--muted); font-size: 13px; }
+    .example { display: grid; grid-template-columns: 1fr auto 1fr; gap: 14px; align-items: center; padding: 18px; border: 1px dashed #b8c7da; border-radius: 12px; }
+    .example code { display: block; padding: 12px; border-radius: 8px; color: #dbe9fa; background: #132c4c; white-space: pre-wrap; }
+    .evidence { padding: 17px; border-left: 3px solid #d8757a; border-radius: 10px; background: #fff6f6; color: #4e596b; }
+    .evidence span { display: block; margin-bottom: 6px; color: var(--red); font-size: 12px; font-weight: 800; }
+    details { margin-top: 11px; border: 1px solid var(--line); border-radius: 11px; background: #fbfcfe; }
+    summary { padding: 13px 15px; cursor: pointer; font-weight: 700; }
+    details > div { padding: 0 15px 15px; color: var(--muted); font-size: 13px; }
+    .approval { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .approval article { position: relative; padding: 19px; border-top: 4px solid var(--blue); border-radius: 11px; background: #f7f9fc; }
+    .approval small { color: var(--muted); }
+    .db-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .db-grid article { padding: 16px; border: 1px solid var(--line); border-radius: 11px; }
+    .db-grid code { color: var(--blue); font-weight: 800; }
+    .issue-list { display: grid; gap: 11px; }
+    .issue { display: grid; grid-template-columns: 34px 1fr; gap: 12px; padding: 16px; border-radius: 11px; background: var(--amber-soft); }
+    .issue > b:first-child { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; color: white; background: var(--amber); }
+    .issue div > b { display: block; margin-bottom: 4px; color: var(--navy); line-height: 1.45; }
+    .issue div > p { margin: 0; }
+    footer { max-width: 1200px; margin: 0 auto 40px; padding: 0 20px; color: var(--muted); font-size: 12px; text-align: center; }
+    @media (max-width: 980px) {
+      .layout { grid-template-columns: 1fr; margin-top: 20px; }
+      .toc { position: static; display: flex; overflow-x: auto; gap: 4px; }
+      .toc strong { display: none; }
+      .toc a { flex: 0 0 auto; }
+      .flow { grid-template-columns: repeat(2, 1fr); }
+      .flow-step::after { display: none; }
+      .cards, .matrix, .approval, .decision-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 640px) {
+      .hero { padding: 38px 20px; }
+      .eyebrow { margin-top: 40px; }
+      .hero-stats { grid-template-columns: 1fr 1fr; }
+      .section { padding: 22px 17px; border-radius: 14px; }
+      .section-head { flex-direction: column; }
+      .flow, .db-grid { grid-template-columns: 1fr; }
+      .example { grid-template-columns: 1fr; }
+      .example > b { text-align: center; transform: rotate(90deg); }
+    }
+    @media print {
+      body { background: white; font-size: 10pt; }
+      .hero { min-height: 0; padding: 28px; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+      .hero-actions, .toc, .role-toolbar { display: none; }
+      .layout { display: block; margin: 18px 0; max-width: none; }
+      .section { break-inside: avoid; box-shadow: none; margin-bottom: 12px; }
+      details > div { display: block; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#main">跳到主要内容</a>
+  <header class="hero">
+    <div class="hero-inner">
+      <div class="brand"><span class="brand-mark">契</span><span>契析 QIXI · AI 合同审核智能体</span></div>
+      <p class="eyebrow">PRODUCT LOGIC HANDBOOK · 2026.08</p>
+      <h1>权限、审核流程与风险评分<br />一页理解全貌</h1>
+      <p class="hero-copy">以当前系统实际代码为准，说明六类账户能做什么、合同如何进入五轮审核、人工处置如何改变下一轮输入、POC规则与大模型如何协作，以及审批与审计如何落库。</p>
+      <div class="hero-actions"><a href="#permissions">查看权限矩阵</a><a href="#workflow">查看审核流程</a><button class="print-btn" type="button" onclick="window.print()">打印 / 保存PDF</button></div>
+      <div class="hero-stats"><div><strong>6</strong><span>账户角色</span></div><div><strong>13</strong><span>POC核心规则</span></div><div><strong>5轮</strong><span>逐版闭环审核</span></div><div><strong>1个</strong><span>统一正式数据库</span></div></div>
+    </div>
+  </header>
+
+  <div class="layout">
+    <nav class="toc" aria-label="本页目录">
+      <strong>快速导航</strong>
+      <a href="#overview">系统总览</a><a href="#permissions">权限矩阵</a><a href="#workflow">审核流程</a><a href="#decisions">处置与下一轮</a><a href="#rules">POC规则</a><a href="#llm">大模型分级</a><a href="#score">合同评分</a><a href="#approval">审批流程</a><a href="#data">数据落库</a><a href="#limits">当前边界</a>
+    </nav>
+
+    <main id="main">
+      <section class="section" id="overview">
+        <div class="section-head"><div><span class="section-no">01 / OVERVIEW</span><h2>系统如何作出审核结论</h2><p class="muted">不是让大模型单独决定，而是多层能力合并后再由人工处置。</p></div><span class="tag">当前实现</span></div>
+        <div class="cards">
+          <article class="card"><b>确定性规则先识别</b><p>13项POC规则负责发现付款、解除、责任上限、验收、附件冲突等明确红线，风险等级由规则预设。</p></article>
+          <article class="card"><b>大模型负责补漏</b><p>模型查找规则未覆盖的问题，但必须引用真实原文，并按影响、可能性、整改难度给出量化因素。</p></article>
+          <article class="card"><b>人工决定如何处置</b><p>接纳项写入下一版系统修订稿，拒绝项继承为人工放行结论；下一轮只复核修改后正文和剩余、新增风险。</p></article>
+        </div>
+      </section>
+
+      <section class="section" id="permissions">
+        <div class="section-head"><div><span class="section-no">02 / ACCESS CONTROL</span><h2>六类账户权限矩阵</h2><p class="muted">点击角色可以突出对应权限列。后端接口是最终权限边界，系统管理员自动绕过角色限制。</p></div><span class="tag">RBAC</span></div>
+        <div class="role-toolbar" role="group" aria-label="选择角色查看权限">
+          <button type="button" data-col="2" data-role="销售 陈晨" aria-pressed="false">销售</button>
+          <button type="button" data-col="3" data-role="法务审核 李思" aria-pressed="false">法务审核</button>
+          <button type="button" data-col="4" data-role="合同管理员 张伟" aria-pressed="false">合同管理员</button>
+          <button type="button" data-col="5" data-role="财务专家 王芳" aria-pressed="false">财务专家</button>
+          <button type="button" data-col="6" data-role="审批人 刘建平" aria-pressed="false">审批人</button>
+          <button type="button" data-col="7" data-role="系统管理员" aria-pressed="false">系统管理员</button>
+          <button type="button" data-col="0" data-role="全部角色" aria-pressed="true">显示全部</button>
+        </div>
+        <div class="role-summary" aria-live="polite"><span class="role-avatar" id="role-avatar">全</span><div><strong id="role-name">全部角色</strong><span id="role-desc">绿色为允许，黄色表示只能处理分配给本人的任务，灰色表示无权操作。</span></div></div>
+        <div class="table-wrap">
+          <table id="permission-table">
+            <caption>✓ 允许操作　本人＝仅限分配给当前用户的任务　—＝后端拒绝</caption>
+            <thead><tr><th>功能</th><th>销售</th><th>法务</th><th>合同管理员</th><th>财务</th><th>审批人</th><th>系统管理员</th></tr></thead>
+            <tbody>
+              <tr><td>查看全部合同与审核结果</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+              <tr><td>上传合同或新版本</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="no">—</td><td class="no">—</td><td class="yes">✓</td></tr>
+              <tr><td>启动AI审核</td><td class="no">—</td><td class="yes">✓</td><td class="yes">✓</td><td class="no">—</td><td class="no">—</td><td class="yes">✓</td></tr>
+              <tr><td>分配审核人</td><td class="no">—</td><td class="yes">✓</td><td class="yes">✓</td><td class="no">—</td><td class="no">—</td><td class="yes">✓</td></tr>
+              <tr><td>接纳、修改或拒绝AI建议</td><td class="no">—</td><td class="yes">✓</td><td class="yes">✓</td><td class="no">—</td><td class="no">—</td><td class="yes">✓</td></tr>
+              <tr><td>记录客户谈判反馈</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="no">—</td><td class="no">—</td><td class="yes">✓</td></tr>
+              <tr><td>发起跨部门询问</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+              <tr><td>答复跨部门询问</td><td class="self">本人</td><td class="self">本人</td><td class="self">本人</td><td class="self">本人</td><td class="self">本人</td><td class="yes">✓</td></tr>
+              <tr><td>生成审批矩阵</td><td class="no">—</td><td class="yes">✓</td><td class="yes">✓</td><td class="no">—</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+              <tr><td>审批合同</td><td class="no">—</td><td class="self">本人</td><td class="no">—</td><td class="self">本人</td><td class="self">本人</td><td class="yes">✓</td></tr>
+              <tr><td>生成订改申请</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+              <tr><td>查看知识库与风险报告</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+              <tr><td>查看审计日志</td><td class="no">—</td><td class="yes">✓</td><td class="yes">✓</td><td class="no">—</td><td class="no">—</td><td class="yes">✓</td></tr>
+              <tr><td>下载合同原件</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+              <tr><td>导出普通或带痕迹版本</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+              <tr><td>导出内部审核版本</td><td class="no">—</td><td class="yes">✓</td><td class="yes">✓</td><td class="no">—</td><td class="no">—</td><td class="yes">✓</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="notice warning" style="margin-top:16px"><b>注意：</b>当前所有已登录账户都能读取全部合同，尚未按照创建人、部门或负责人做数据范围隔离；部分无权操作的按钮前端仍可见，但后端会返回403。</div>
+      </section>
+
+      <section class="section" id="workflow">
+        <div class="section-head"><div><span class="section-no">03 / REVIEW WORKFLOW</span><h2>合同审核端到端流程</h2><p class="muted">一份合同从上传到通过审批的主要状态与处理顺序。</p></div><span class="tag">最多5轮</span></div>
+        <div class="flow">
+          <article class="flow-step"><h3>上传与解析</h3><p>销售、法务或合同管理员上传文件；系统保存原件、提取正文和关键字段，并创建合同版本。</p></article>
+          <article class="flow-step"><h3>准备审核上下文</h3><p>读取最新版本；如上一轮存在已接纳修改，先应用最终文本并形成新的系统修订稿。</p></article>
+          <article class="flow-step"><h3>POC规则扫描</h3><p>13项确定性规则逐条匹配。同一条款重复命中合并，同一风险不同位置归为一张卡。</p></article>
+          <article class="flow-step"><h3>外部条款监测</h3><p>抓取官网条款、保存内容快照和哈希；内容变化或抓取失败都会生成风险提示。</p></article>
+          <article class="flow-step"><h3>大模型补充</h3><p>将规则已发现标题、已拒绝标题和当前有效正文发送给网关模型，最多补充8项遗漏风险。</p></article>
+          <article class="flow-step"><h3>证据与分级校验</h3><p>原文必须能在合同中找到且为8–420字；大模型风险由后端量化矩阵重新定级。</p></article>
+          <article class="flow-step"><h3>人工处置与继承</h3><p>接纳项进入下一版正文，修改后接纳使用法务最终文本；拒绝项作为人工放行结论，不在后续轮次重复提示。</p></article>
+          <article class="flow-step"><h3>审批、导出与审计</h3><p>按金额和合同类型生成审批任务；通过后可导出文档，所有关键操作写入审计日志。</p></article>
+        </div>
+      </section>
+
+      <section class="section" id="decisions">
+        <div class="section-head"><div><span class="section-no">04 / DECISION INHERITANCE</span><h2>三种处置如何影响下一轮</h2><p class="muted">处置不是只改变卡片状态；下一轮审核输入会继承已经作出的人工决定。</p></div><span class="tag">闭环复核</span></div>
+        <div class="decision-grid">
+          <article class="decision accept"><strong>✓ 接纳</strong><p>采用AI给出的修改建议。启动下一轮时，系统将原风险条款替换为建议文本，并自动生成新的系统修订稿DOCX。</p><ul><li>下一轮审核修改后的正文</li><li>已改掉的风险不再命中</li><li>版本列表新增V2、V3等修订稿</li></ul></article>
+          <article class="decision edit"><strong>✎ 修改后接纳</strong><p>法务先编辑AI建议，保存后的最终文本才是有效修改。下一轮使用该人工文本生成修订稿并重新审核。</p><ul><li>不再使用原始AI建议</li><li>修改人和决定进入审计日志</li><li>可在版本对比中查看变化</li></ul></article>
+          <article class="decision reject"><strong>× 拒绝</strong><p>合同原文不变，但该建议被确认为人工放行。后续轮次按规则编号或风险标题继承结论，不再生成重复卡片。</p><ul><li>不会生成文字修改</li><li>拒绝理由写入审计日志</li><li>其他未处置或新增风险继续出现</li></ul></article>
+        </div>
+        <div class="round-chain" aria-label="五轮审核与版本生成示例">
+          <div class="round-node"><strong>V1 客户初稿</strong><small>第1轮审核输入</small></div><span class="round-arrow">→</span>
+          <div class="round-node"><strong>处置R1建议</strong><small>接纳 / 修改 / 拒绝</small></div><span class="round-arrow">→</span>
+          <div class="round-node"><strong>V2 系统修订稿</strong><small>写入已接纳文本</small></div><span class="round-arrow">→</span>
+          <div class="round-node"><strong>第2轮审核</strong><small>复核V2并过滤放行项</small></div><span class="round-arrow">→</span>
+          <div class="round-node"><strong>直至第5轮</strong><small>最多5条审核记录</small></div>
+        </div>
+        <div class="notice"><b>版本生成规则：</b>只有存在“接纳”或“修改后接纳”时，启动下一轮才自动创建系统修订稿；如果本轮只有拒绝项，则沿用当前文件版本，但继承人工放行结论。清洁版导出只对最新版本尚未固化的接纳项继续应用，避免重复修改。</div>
+        <div class="notice warning" style="margin-top:12px"><b>定位保护：</b>如果某条已接纳建议无法准确定位到当前正文，系统返回冲突提示并停止下一轮，要求上传人工修订稿，避免悄悄使用未修改的旧文本。</div>
+      </section>
+
+      <section class="section" id="rules">
+        <div class="section-head"><div><span class="section-no">05 / POC RULE ENGINE</span><h2>POC规则如何判断风险</h2><p class="muted">每条规则由编号、类别、匹配表达式、固定等级、修改建议、依据和谈判重点组成。</p></div><span class="tag">规则先行</span></div>
+        <div class="table-wrap">
+          <table>
+            <caption>当前13项核心规则；等级是规则预设值，命中后不会由大模型改写。</caption>
+            <thead><tr><th>风险规则</th><th>等级</th><th>主要触发线索</th><th>为什么关注</th></tr></thead>
+            <tbody>
+              <tr><td>自动续租或默示续租</td><td><span class="risk-high">高</span></td><td>自动续租、无异议视同续租</td><td>形成长期持续义务</td></tr>
+              <tr><td>付款账期或付款前提偏离</td><td><span class="risk-medium">中</span></td><td>60/90/120日、背靠背付款</td><td>回款和现金流风险</td></tr>
+              <tr><td>违约金过高或责任单边</td><td><span class="risk-high">高</span></td><td>30%以上、全部损失、一切损失</td><td>可能形成重大赔偿</td></tr>
+              <tr><td>关联方范围过宽</td><td><span class="risk-high">高</span></td><td>关联方履约但责任割裂</td><td>付款和履约主体不清</td></tr>
+              <tr><td>短期未异议视为验收</td><td><span class="risk-medium">中</span></td><td>3/5/7日未异议即视为验收</td><td>可能丧失质量异议权</td></tr>
+              <tr><td>客户单方解除</td><td><span class="risk-high">高</span></td><td>甲方有权单方解除或终止</td><td>库存、设备和投入损失</td></tr>
+              <tr><td>欠款触发全面停保</td><td><span class="risk-medium">中</span></td><td>逾期后暂停全部维修保养</td><td>安全和服务连续性风险</td></tr>
+              <tr><td>争议管辖地不利</td><td><span class="risk-medium">中</span></td><td>仅客户或甲方所在地法院</td><td>异地诉讼成本</td></tr>
+              <tr><td>转让限制不对等</td><td><span class="risk-medium">中</span></td><td>未经甲方同意不得转让</td><td>影响融资与集团调整</td></tr>
+              <tr><td>动态官网条款</td><td><span class="risk-high">高</span></td><td>网址、官网条款、网站公布</td><td>可能被客户单方更新</td></tr>
+              <tr><td>正文与附件效力冲突</td><td><span class="risk-high">高</span></td><td>技术协议、附件、补充协议</td><td>关键约定优先级不清</td></tr>
+              <tr><td>知识产权责任无上限</td><td><span class="risk-high">高</span></td><td>侵权全部损失、永久使用权</td><td>不可控第三方索赔</td></tr>
+              <tr><td>逾期返还设备费用过高</td><td><span class="risk-medium">中</span></td><td>130%租金或占用费</td><td>费用比例偏高</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <details><summary>规则命中与原文截取细节</summary><div>合同文本会先合并连续空白；匹配限制在句号、分号、问号、感叹号等条款边界内。同一条款被多个表达式命中时合并；同一风险最多展示3处原文，更多位置标记“另有N处同类命中”。最终原文总长度不得超过420字。</div></details>
+      </section>
+
+      <section class="section" id="llm">
+        <div class="section-head"><div><span class="section-no">06 / MODEL SEVERITY</span><h2>大模型如何统一评定风险等级</h2><p class="muted">模型不会直接决定最终高、中、低，而是提交三个1–5分因素，由后端固定公式复算。</p></div><span class="tag">温度 0.1</span></div>
+        <div class="matrix">
+          <article><strong>影响程度 <em>×14</em></strong><ul><li>1：文字或轻微流程问题</li><li>3：实质影响付款、验收或服务</li><li>5：无限责任、重大合规或人身安全</li></ul></article>
+          <article><strong>触发可能性 <em>×4</em></strong><ul><li>1：需要多个特殊条件</li><li>3：存在现实发生可能</li><li>5：自动生效、事实已满足或高度可能</li></ul></article>
+          <article><strong>整改难度 <em>×2</em></strong><ul><li>1：文字修改即可</li><li>3：需要实质谈判</li><li>5：外部制度约束或极难控制</li></ul></article>
+        </div>
+        <div class="formula">模型风险分 = 影响程度 × 14 + 触发可能性 × 4 + 整改难度 × 2</div>
+        <div class="cards">
+          <article class="card"><b><span class="risk-high">高</span> 高风险</b><p>影响=5；或者影响≥4且模型风险分≥75。</p></article>
+          <article class="card"><b><span class="risk-medium">中</span> 中风险</b><p>影响≥3；或者模型风险分≥45。</p></article>
+          <article class="card"><b><span class="risk-low">低</span> 低风险</b><p>未达到高、中阈值的轻微或可快速整改问题。</p></article>
+        </div>
+        <div class="notice" style="margin-top:16px"><b>强制校验：</b>模型返回的自由文本 risk_level 不被直接采信；缺少三个分值、超出1–5、没有理由、原文无法定位或长度不合格，整项发现不会入库。</div>
+      </section>
+
+      <section class="section" id="score">
+        <div class="section-head"><div><span class="section-no">07 / CONTRACT SCORE</span><h2>整份合同的风险分如何形成</h2><p class="muted">每一轮先过滤已拒绝的人工放行项，再根据当前有效正文中的风险等级累计，最高100分。</p></div><span class="tag">0–100</span></div>
+        <div class="formula">合同风险分 = 高风险数 × 18 + 中风险数 × 10 + 低风险数 × 4</div>
+        <div class="example"><div><h3>示例：当前合同</h3><code>高风险 2项 × 18 = 36
+中风险 2项 × 10 = 20
+低风险 1项 ×  4 =  4</code></div><b>→</b><div><h3>最终结果</h3><p><strong style="font-size:32px;color:var(--red)">60分</strong></p><p class="muted">≥55，因此整份合同为高风险。</p></div></div>
+        <ul class="plain-list"><li>合同分数≥55，或者高风险点≥3项：整体高风险。</li><li>合同分数≥20：整体中风险。</li><li>合同分数＜20：整体低风险。</li></ul>
+      </section>
+
+      <section class="section" id="evidence-section">
+        <div class="section-head"><div><span class="section-no">08 / EVIDENCE</span><h2>风险原文如何展示</h2><p class="muted">目标是证据足够、位置清楚，同时避免复制整章合同。</p></div><span class="tag">8–420字</span></div>
+        <div class="evidence"><span>风险原文 · 同类风险多处出现</span>【命中1】验收完成后90日内支付全部款项。<br />【命中2】服务费在收到第三方回款后120日内支付。<br />【命中3】尾款在最终开票后60日内支付。<br />【另有2处同类命中】</div>
+        <div class="cards" style="margin-top:14px"><article class="card"><b>过短会被拒绝</b><p>少于8字无法独立证明风险，规则会扩展到完整条款；仍不足则丢弃。</p></article><article class="card"><b>过长会被裁剪</b><p>后端统一限制420字，前端超过220字时默认折叠，可手动展开。</p></article><article class="card"><b>必须真实存在</b><p>大模型引用的原文必须能在合同正文中定位，禁止编造或改写证据。</p></article></div>
+      </section>
+
+      <section class="section" id="approval">
+        <div class="section-head"><div><span class="section-no">09 / APPROVAL</span><h2>审批矩阵与状态流转</h2><p class="muted">审批任务根据合同金额和合同类型自动生成，任务只能由被分配人或系统管理员处理。</p></div><span class="tag">K2 / OA草稿</span></div>
+        <div class="approval">
+          <article><h3>第1级 · 法务部</h3><p>所有进入审批的合同都会生成法务审批任务。</p><small>基础审批层</small></article>
+          <article><h3>第2级 · 财务部</h3><p>合同金额≥50万元，或者合同类型为租赁、销售+租赁时生成。</p><small>金额与租赁条件复核</small></article>
+          <article><h3>第3级 · 管理层</h3><p>合同金额≥300万元时生成管理层审批任务。</p><small>重大合同决策</small></article>
+        </div>
+        <ul class="plain-list"><li>任一审批任务驳回时，合同状态立即变为“待修改”。</li><li>所有审批任务完成后，当前代码将合同状态更新为“通过”。</li><li>系统生成外部流程草稿号，当前POC未直接推送真实K2/OA。</li></ul>
+        <div class="notice warning" style="margin-top:14px"><b>当前缺口：</b>终态判断只检查其他任务是否“已完成”，没有再次检查是否曾经驳回。因此驳回后若其他节点继续完成，合同可能被重新置为“通过”；正式上线前必须增加驳回阻断和重新提交机制。</div>
+      </section>
+
+      <section class="section" id="data">
+        <div class="section-head"><div><span class="section-no">10 / DATA MODEL</span><h2>一个正式库中的主要数据表</h2><p class="muted">业务数据存放在同一个MySQL正式库，通过不同表表达合同、版本、审核、协同和权限关系。</p></div><span class="tag">统一数据库</span></div>
+        <div class="db-grid">
+          <article><code>users</code><p>账户、角色、部门、启用状态和密码摘要。</p></article>
+          <article><code>contracts</code><p>合同主档、客户、金额、类型、状态、当前轮次和整体风险。</p></article>
+          <article><code>contract_versions</code><p>人工上传文件及系统修订稿、有效正文、哈希、解析状态和版本号。</p></article>
+          <article><code>review_runs</code><p>每一轮审核的分数、统计、摘要、引擎和版本关联。</p></article>
+          <article><code>review_suggestions</code><p>风险点、原文、建议、依据、等级、置信度和人工决定。</p></article>
+          <article><code>website_terms_snapshots</code><p>官网条款抓取结果、内容哈希和历史快照。</p></article>
+          <article><code>consultations / negotiation_records</code><p>跨部门询问、答复、客户反馈和内部谈判备注。</p></article>
+          <article><code>approval_tasks / audit_logs</code><p>审批任务、外部流程号以及关键操作审计轨迹。</p></article>
+        </div>
+      </section>
+
+      <section class="section" id="limits">
+        <div class="section-head"><div><span class="section-no">11 / CURRENT LIMITATIONS</span><h2>当前实现中需要注意的限制</h2><p class="muted">以下为当前POC的已知限制，以及正式上线前需要补齐或收紧的能力。</p></div><span class="tag">待完善项</span></div>
+        <div class="issue-list">
+          <article class="issue"><b>1</b><div><b>缺少数据范围权限</b><p>目前登录后可读取全部合同。正式环境应按创建人、负责部门、分配审核人或组织层级过滤。</p></div></article>
+          <article class="issue"><b>2</b><div><b>前端按钮与后端权限未完全同步</b><p>部分无权用户仍能看到按钮，点击后由后端403拒绝。应根据角色直接隐藏或禁用并解释原因。</p></div></article>
+          <article class="issue"><b>3</b><div><b>知识库尚未真正进入动态检索</b><p>当前审核以代码内规则、同客户历史合同和大模型为主，数据库知识条目尚未作为RAG上下文参与每次审核。</p></div></article>
+          <article class="issue"><b>4</b><div><b>模型三个维度仍存在判断空间</b><p>后端公式已经固定，但模型可能对同类风险给出3分或4分。可继续增加关键风险的强制分值下限。</p></div></article>
+          <article class="issue"><b>5</b><div><b>当前审批是POC草稿流程</b><p>审批矩阵和外部流程号已经具备，但尚未与企业真实K2、OA、邮件或SSO系统完成双向集成。</p></div></article>
+          <article class="issue"><b>6</b><div><b>人工放行尚无撤销或重开入口</b><p>拒绝建议后，当前合同后续轮次会按规则编号或标题持续过滤相同风险。若新版本重新引入该风险，需要增加“撤销放行、重新审核”能力。</p></div></article>
+          <article class="issue"><b>7</b><div><b>审批驳回缺少终态阻断</b><p>任一节点驳回后，其他节点继续完成可能把合同重新置为通过；需增加顺序审批、驳回终止和重新提交批次。</p></div></article>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <footer>契析 · AI合同审核智能体　|　本文档根据当前本地实现生成，流程与权限以后端代码为准。</footer>
+  <script>
+    const roleDescriptions = {
+      "销售 陈晨": "上传合同、记录客户谈判反馈和发起协同；不能启动审核或处置AI建议。",
+      "法务审核 李思": "启动审核、处置风险、分配审核人、查看审计日志，并处理分配给自己的审批任务。",
+      "合同管理员 张伟": "管理合同、版本、审核与审批准备；不能直接完成审批任务。",
+      "财务专家 王芳": "查看合同并处理分配给自己的财务审批或跨部门询问。",
+      "审批人 刘建平": "生成审批矩阵并处理分配给自己的管理层审批任务。",
+      "系统管理员": "绕过角色限制，拥有全部功能权限，并可代答询问或处理任意审批任务。",
+      "全部角色": "绿色为允许，黄色表示只能处理分配给本人的任务，灰色表示无权操作。"
+    };
+    const buttons = [...document.querySelectorAll(".role-toolbar button")];
+    const table = document.getElementById("permission-table");
+    const roleName = document.getElementById("role-name");
+    const roleDesc = document.getElementById("role-desc");
+    const roleAvatar = document.getElementById("role-avatar");
+    buttons.forEach(button => button.addEventListener("click", () => {
+      buttons.forEach(item => item.setAttribute("aria-pressed", String(item === button)));
+      table.querySelectorAll(".focus-col").forEach(cell => cell.classList.remove("focus-col"));
+      const column = Number(button.dataset.col);
+      if (column) table.querySelectorAll(`tr > *:nth-child(${column})`).forEach(cell => cell.classList.add("focus-col"));
+      const role = button.dataset.role;
+      roleName.textContent = role;
+      roleDesc.textContent = roleDescriptions[role];
+      roleAvatar.textContent = role === "全部角色" ? "全" : role.slice(0, 1);
+    }));
+  </script>
+</body>
+</html>

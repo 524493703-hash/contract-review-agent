@@ -1,0 +1,16 @@
+node_modules
+.vinext
+.next
+.wrangler
+.conda
+.git
+.env*
+!.env.example
+deploy/backend.env
+data
+backend/**/__pycache__
+*.pyc
+*.tsbuildinfo
+.codex-work
+dist
+tmp
